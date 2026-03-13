@@ -13,7 +13,7 @@ steps:
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
-    version: '6.0.x'
+    version: '8.0.x'
 
 - script: dotnet restore
   displayName: 'Restore dependencies'
@@ -23,3 +23,23 @@ steps:
 
 - script: dotnet test --no-build --verbosity normal
   displayName: 'Run tests'
+
+# Publish the app to a folder
+- script: dotnet publish -c Release -o $(Build.ArtifactStagingDirectory)
+  displayName: 'Publish project'
+
+# Archive the published output into a zip
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/SampleWebApp.zip'
+    replaceExistingArchive: true
+
+# Deploy the zip to App Service
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: 'AzureConnection'   # your service connection name
+    appName: 'samplewebapptushar'          # your App Service name
+    package: '$(Build.ArtifactStagingDirectory)/SampleWebApp.zip'
