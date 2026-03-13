@@ -24,22 +24,13 @@ steps:
 - script: dotnet test --no-build --verbosity normal
   displayName: 'Run tests'
 
-# Publish the app to a folder
+# Publish the app to the artifact staging directory
 - script: dotnet publish -c Release -o $(Build.ArtifactStagingDirectory)
   displayName: 'Publish project'
 
-# Archive the published output into a zip
-- task: ArchiveFiles@2
-  inputs:
-    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
-    includeRootFolder: false
-    archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/SampleWebApp.zip'
-    replaceExistingArchive: true
-
-# Deploy the zip to App Service
+# Deploy the published folder directly (no need for ArchiveFiles)
 - task: AzureWebApp@1
   inputs:
     azureSubscription: 'AzureConnection'   # your service connection name
     appName: 'samplewebapptushar'          # your App Service name
-    package: '$(Build.ArtifactStagingDirectory)/SampleWebApp.zip'
+    package: '$(Build.ArtifactStagingDirectory)'
