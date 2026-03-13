@@ -19,8 +19,11 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapStaticAssets();
-app.MapRazorPages()
-   .WithStaticAssets();
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+app.UseStaticFiles();   // enables serving files from wwwroot
+app.MapRazorPages();    // maps Razor Pages
+
 
 app.Run();
