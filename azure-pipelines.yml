@@ -10,27 +10,40 @@ pool:
   vmImage: 'windows-latest'
 
 steps:
+# Ensure the correct .NET 8 SDK is installed on the agent
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
     version: '8.0.x'
 
+# Restore dependencies
 - script: dotnet restore
   displayName: 'Restore dependencies'
 
+# Build the project
 - script: dotnet build --configuration Release
   displayName: 'Build project'
 
+# Run tests
 - script: dotnet test --no-build --verbosity normal
   displayName: 'Run tests'
 
-# Publish the app to the artifact staging directory
+# Publish the app into the artifact staging directory
 - script: dotnet publish -c Release -o $(Build.ArtifactStagingDirectory)
   displayName: 'Publish project'
 
-# Deploy the published output folder directly
+# Archive the published output into a zip file
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/SampleWebApp.zip'
+    replaceExistingArchive: true
+
+# Deploy the zip package to Azure App Service
 - task: AzureWebApp@1
   inputs:
     azureSubscription: 'AzureConnection'   # your service connection name
     appName: 'samplewebapptushar'          # your App Service name
-    package: '$(Build.ArtifactStagingDirectory)'
+    package: '$(Build.ArtifactStagingDirectory)/SampleWebApp.zip'
