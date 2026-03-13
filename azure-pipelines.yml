@@ -2,7 +2,6 @@
 # Start with a minimal pipeline that you can customize to build and deploy your code.
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
-
 trigger:
 - main
 
@@ -10,6 +9,7 @@ pool:
   vmImage: 'windows-latest'
 
 steps:
+
 # Install .NET 8 SDK
 - task: UseDotNet@2
   inputs:
@@ -28,22 +28,26 @@ steps:
 - script: dotnet test --no-build --verbosity normal
   displayName: 'Run tests'
 
-# Publish the app into the artifact staging directory
-- script: dotnet publish -c Release -o $(Build.ArtifactStagingDirectory)
+# Publish project
+- script: dotnet publish -c Release -o $(Build.ArtifactStagingDirectory)/publish
   displayName: 'Publish project'
 
-# Archive the published output into a zip file
+# Create ZIP package
 - task: ArchiveFiles@2
   inputs:
-    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/publish'
     includeRootFolder: false
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/SampleWebApp.zip'
     replaceExistingArchive: true
 
-# Deploy the zip package to Azure App Service
+# Debug step (shows files in pipeline agent)
+- script: dir $(Build.ArtifactStagingDirectory)
+  displayName: 'Check ZIP file'
+
+# Deploy to Azure App Service
 - task: AzureWebApp@1
   inputs:
-    azureSubscription: 'AzureConnection'   # your service connection name
-    appName: 'samplewebapptushar'          # your App Service name
+    azureSubscription: 'AzureConnection'
+    appName: 'samplewebapptushar'
     package: '$(Build.ArtifactStagingDirectory)/SampleWebApp.zip'
