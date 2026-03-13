@@ -28,7 +28,7 @@ steps:
 - script: dotnet publish -c Release -o $(Build.ArtifactStagingDirectory)
   displayName: 'Publish project'
 
-# Deploy the published folder directly
+# Deploy the published output folder
 - task: AzureWebApp@1
   inputs:
     azureSubscription: 'AzureConnection'   # your service connection name
