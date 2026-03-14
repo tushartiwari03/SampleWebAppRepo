@@ -33,6 +33,6 @@ steps:
 - task: AzureWebApp@1
   displayName: Deploy to Azure
   inputs:
-    azureSubscription: 'DevOpsRg'
+    azureSubscription: 'AzureConnection'
     appName: 'samplewebapptushar'
     package: '$(Build.ArtifactStagingDirectory)'
