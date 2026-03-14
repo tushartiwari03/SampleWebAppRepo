@@ -1,66 +1,44 @@
 trigger:
-
-* main
+- main
 
 pool:
-vmImage: 'windows-latest'
+  vmImage: 'windows-latest'
 
 steps:
-
 # Install .NET 8 SDK
-
-* task: UseDotNet@2
-  displayName: Install .NET 8 SDK
+- task: UseDotNet@2
   inputs:
-  packageType: 'sdk'
-  version: '8.0.x'
+    packageType: 'sdk'
+    version: '8.0.x'
 
 # Restore dependencies
+- script: dotnet restore
+  displayName: 'Restore dependencies'
 
-* script: dotnet restore
-  displayName: Restore dependencies
-
-# Build the application
-
-* script: dotnet build --configuration Release
-  displayName: Build project
+# Build project
+- script: dotnet build --configuration Release
+  displayName: 'Build project'
 
 # Run tests
+- script: dotnet test --no-build --verbosity normal
+  displayName: 'Run tests'
 
-* script: dotnet test --no-build --verbosity normal
-  displayName: Run tests
+# Publish the app into the artifact staging directory
+- script: dotnet publish -c Release -o $(Build.ArtifactStagingDirectory)
+  displayName: 'Publish project'
 
-# Publish the application
-
-* script: dotnet publish -c Release -o $(Build.ArtifactStagingDirectory)
-  displayName: Publish project
-
-# Check publish output
-
-* script: dir $(Build.ArtifactStagingDirectory)
-  displayName: Verify publish output
-
-# Create ZIP package
-
-* task: ArchiveFiles@2
-  displayName: Create ZIP package
+# Archive the published output into a zip file
+- task: ArchiveFiles@2
   inputs:
-  rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
-  includeRootFolder: false
-  archiveType: 'zip'
-  archiveFile: '$(Build.ArtifactStagingDirectory)/webapp.zip'
-  replaceExistingArchive: true
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/SampleWebApp.zip'
+    replaceExistingArchive: true
 
-# Verify ZIP file exists
-
-* script: dir $(Build.ArtifactStagingDirectory)
-  displayName: Verify ZIP file
-
-# Deploy to Azure Web App
-
-* task: AzureWebApp@1
-  displayName: Deploy to Azure Web App
+# Deploy the zip package to Azure App Service
+- task: AzureWebApp@1
   inputs:
-  azureSubscription: 'AzureConnection'
-  appName: 'samplewebapptushar'
-  package: '$(Build.ArtifactStagingDirectory)/webapp.zip'
+    azureSubscription: 'AzureConnection'   # your service connection name
+    appName: 'samplewebapptushar'          # your App Service name
+    package: '$(Build.ArtifactStagingDirectory)/SampleWebApp.zip'
