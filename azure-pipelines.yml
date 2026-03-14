@@ -1,38 +1,66 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
 trigger:
-- main
+
+* main
 
 pool:
-  vmImage: 'windows-latest'
+vmImage: 'windows-latest'
 
 steps:
 
-- task: UseDotNet@2
-  inputs:
-    packageType: sdk
-    version: '8.0.x'
+# Install .NET 8 SDK
 
-- script: dotnet restore
+* task: UseDotNet@2
+  displayName: Install .NET 8 SDK
+  inputs:
+  packageType: 'sdk'
+  version: '8.0.x'
+
+# Restore dependencies
+
+* script: dotnet restore
   displayName: Restore dependencies
 
-- script: dotnet build --configuration Release
+# Build the application
+
+* script: dotnet build --configuration Release
   displayName: Build project
 
-- script: dotnet test --no-build
+# Run tests
+
+* script: dotnet test --no-build --verbosity normal
   displayName: Run tests
 
-- script: dotnet publish -c Release -o $(Build.ArtifactStagingDirectory)
+# Publish the application
+
+* script: dotnet publish -c Release -o $(Build.ArtifactStagingDirectory)
   displayName: Publish project
 
-- script: dir $(Build.ArtifactStagingDirectory)
+# Check publish output
+
+* script: dir $(Build.ArtifactStagingDirectory)
   displayName: Verify publish output
 
-- task: AzureWebApp@1
-  displayName: Deploy to Azure
+# Create ZIP package
+
+* task: ArchiveFiles@2
+  displayName: Create ZIP package
   inputs:
-    azureSubscription: 'AzureConnection'
-    appName: 'samplewebapptushar'
-    package: '$(Build.ArtifactStagingDirectory)'
+  rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
+  includeRootFolder: false
+  archiveType: 'zip'
+  archiveFile: '$(Build.ArtifactStagingDirectory)/webapp.zip'
+  replaceExistingArchive: true
+
+# Verify ZIP file exists
+
+* script: dir $(Build.ArtifactStagingDirectory)
+  displayName: Verify ZIP file
+
+# Deploy to Azure Web App
+
+* task: AzureWebApp@1
+  displayName: Deploy to Azure Web App
+  inputs:
+  azureSubscription: 'AzureConnection'
+  appName: 'samplewebapptushar'
+  package: '$(Build.ArtifactStagingDirectory)/webapp.zip'
