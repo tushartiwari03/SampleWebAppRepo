@@ -33,7 +33,7 @@ steps:
     rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
     includeRootFolder: false
     archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/SampleWebApp.zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/samplewebapptushar.zip'
     replaceExistingArchive: true
 
 # Deploy the zip package to Azure App Service
@@ -41,4 +41,4 @@ steps:
   inputs:
     azureSubscription: 'AzureConnection'   # your service connection name
     appName: 'samplewebapptushar'          # your App Service name
-    package: '$(Build.ArtifactStagingDirectory)/SampleWebApp.zip'
+    package: '$(Build.ArtifactStagingDirectory)/samplewebapptushar.zip'
